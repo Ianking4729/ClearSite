@@ -1,0 +1,16 @@
+[
+  {
+    "rule": "heading-order",
+    "impact": "moderate",
+    "help": "Heading levels should only increase by one",
+    "nodes": [
+      {
+        "target": [
+          "h4"
+        ],
+        "html": "<h4>Registration is now open</h4>",
+        "failureSummary": "Fix any of the following:\n  Heading order invalid"
+      }
+    ]
+  }
+]

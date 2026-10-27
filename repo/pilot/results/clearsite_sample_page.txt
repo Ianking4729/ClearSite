@@ -1,0 +1,31 @@
+ClearSite scan: pages/sample_page.html
+Total issues found: 7  (4 errors, 3 warnings)
+
+1. [ERROR] img-missing-alt
+   Element: <img src="logo.png">
+   Image has no alt attribute at all.
+
+2. [WARNING] img-empty-alt
+   Element: <img src="hero-banner.jpg" alt="">
+   Image has an empty alt attribute; only acceptable for purely decorative images.
+
+3. [WARNING] heading-skip
+   Element: <h3>
+   Heading level jumps from h1 to h3, skipping a level.
+
+4. [ERROR] low-contrast-text
+   Element: <p style="color:#999999; background-color:#ffffff">
+   Contrast ratio is 2.85:1, below the WCAG 2.1 AA minimum of 4.5:1.
+
+5. [WARNING] non-descriptive-link
+   Element: <a>Click here</a>
+   Link text "Click here" does not describe the link destination out of context.
+
+6. [ERROR] input-missing-label
+   Element: <input type="text" id="email">
+   Form input has no associated <label for=...>.
+
+7. [ERROR] input-missing-label
+   Element: <input type="text" id="business_name">
+   Form input has no associated <label for=...>.
+

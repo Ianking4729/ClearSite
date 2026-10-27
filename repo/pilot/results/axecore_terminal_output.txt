@@ -1,0 +1,29 @@
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== clean_page_1 ===
+axe-core violations: 0 (across 0 rule types)
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== clean_page_2 ===
+axe-core violations: 0 (across 0 rule types)
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== context_case ===
+axe-core violations: 0 (across 0 rule types)
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== issues_page_2 ===
+axe-core violations: 1 (across 1 rule types)
+  [critical] label (1x) - Form elements must have labels
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== issues_page_3 ===
+axe-core violations: 1 (across 1 rule types)
+  [moderate] heading-order (1x) - Heading levels should only increase by one
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+=== sample_page ===
+axe-core violations: 3 (across 3 rule types)
+  [moderate] heading-order (1x) - Heading levels should only increase by one
+  [critical] image-alt (1x) - Images must have alternative text
+  [critical] label (1x) - Form elements must have labels
+

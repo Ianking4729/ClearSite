@@ -1,0 +1,3 @@
+ClearSite scan: pages/clean_page_2.html
+Total issues found: 0  (0 errors, 0 warnings)
+

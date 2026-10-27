@@ -1,0 +1,54 @@
+{
+  "n_images": 406,
+  "n_sites": 34,
+  "n_meaningful": 358,
+  "folds": 5,
+  "seed": 0,
+  "results": {
+    "clearsite_rule": {
+      "precision": 0.8817733990147784,
+      "recall": 1.0,
+      "f1": 0.93717277486911,
+      "tp": 358,
+      "fp": 48,
+      "fn": 0,
+      "tn": 0
+    },
+    "axecore_rule": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 358,
+      "tn": 48
+    },
+    "filename_heuristic": {
+      "precision": 0.9010416666666666,
+      "recall": 0.9664804469273743,
+      "f1": 0.9326145552560647,
+      "tp": 346,
+      "fp": 38,
+      "fn": 12,
+      "tn": 10
+    },
+    "logistic_regression": {
+      "precision": 0.8996655518394648,
+      "recall": 0.7513966480446927,
+      "f1": 0.8188736681887366,
+      "tp": 269,
+      "fp": 30,
+      "fn": 89,
+      "tn": 18
+    },
+    "random_forest": {
+      "precision": 0.9401993355481728,
+      "recall": 0.7905027932960894,
+      "f1": 0.858877086494689,
+      "tp": 283,
+      "fp": 18,
+      "fn": 75,
+      "tn": 30
+    }
+  }
+}

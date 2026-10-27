@@ -1,0 +1,6 @@
+,precision,recall,f1,tp,fp,fn,tn
+clearsite_rule,0.882,1.0,0.937,358.0,48.0,0.0,0.0
+axecore_rule,0.0,0.0,0.0,0.0,0.0,358.0,48.0
+filename_heuristic,0.901,0.966,0.933,346.0,38.0,12.0,10.0
+logistic_regression,0.9,0.751,0.819,269.0,30.0,89.0,18.0
+random_forest,0.94,0.791,0.859,283.0,18.0,75.0,30.0

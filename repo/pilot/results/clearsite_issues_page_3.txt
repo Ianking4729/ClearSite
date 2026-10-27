@@ -1,0 +1,11 @@
+ClearSite scan: pages/issues_page_3.html
+Total issues found: 2  (0 errors, 2 warnings)
+
+1. [WARNING] heading-skip
+   Element: <h4>
+   Heading level jumps from h1 to h4, skipping a level.
+
+2. [WARNING] non-descriptive-link
+   Element: <a>here</a>
+   Link text "here" does not describe the link destination out of context.
+

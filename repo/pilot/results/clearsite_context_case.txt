@@ -1,0 +1,11 @@
+ClearSite scan: pages/context_case.html
+Total issues found: 2  (0 errors, 2 warnings)
+
+1. [WARNING] img-empty-alt
+   Element: <img src="divider-line.png" alt="">
+   Image has an empty alt attribute; only acceptable for purely decorative images.
+
+2. [WARNING] img-empty-alt
+   Element: <img src="house-1.jpg" alt="">
+   Image has an empty alt attribute; only acceptable for purely decorative images.
+

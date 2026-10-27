@@ -1,0 +1,129 @@
+% ACMSE 2027 requires the modified ACM template (acmart-master-acmse2027). 
+% Download it from https://acmse.net/2027/papers-format/ and replace acmart.cls/format files
+% in this project, keeping this content. Review is DOUBLE-ANONYMOUS: keep [anonymous].
+\documentclass[sigconf,anonymous]{acmart}
+
+\usepackage{booktabs}
+\usepackage{xcolor}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+\begin{document}
+
+\title{ClearSite: Rule-Based and Learned Detection of Decorative Images in Web Accessibility Checking}
+
+\author{Anonymous Author(s)}
+\affiliation{\institution{Anonymous Institution}\country{}}
+
+\begin{abstract}
+Automated web accessibility scanners cannot always tell whether an image with an empty \texttt{alt} attribute is decorative (correct) or meaningful (a failure). ClearSite, a small rule-based checker for five WCAG 2.1 AA checks, was built and compared against axe-core on hand-reviewed pages. A pilot on six self-written pages found that one rule, flagging empty alt text, produced the only false positive. A labeled set of 406 empty-alt images from 34 public websites (358 meaningful, 48 decorative) was then built, and five methods were compared with website-grouped cross-validation. Flagging every empty-alt image reached F1 0.937, mostly because 88\% of images were meaningful. A random forest trained from scratch had the highest precision (0.940) and correctly cleared 30 of 48 decorative images, but missed 75 of 358 meaningful ones, so its F1 was lower (0.859). A file-name heuristic matched the flag-everything rule on F1 (0.933). The results suggest a learned filter can cut false alarms, but only by accepting missed barriers.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+Small-business and independent developers often ship inaccessible pages. The WebAIM Million study found detectable WCAG 2 failures on 95.9\% of one million home pages in 2026~\cite{webaim2026}. Automated scanners help, but some checks depend on context: the W3C guidance says an image that adds no information should carry an empty \texttt{alt} so screen readers skip it, and that the author must decide whether an image is decorative or informative~\cite{w3cdecorative}. A scanner that sees \texttt{alt=""} cannot make that decision from the attribute alone.
+
+\textbf{Task.} This paper studies a binary classification task: given an image with an empty \texttt{alt} attribute, predict whether it is decorative or meaningful. 
+
+\textbf{Research questions.} RQ1: How do a rule baseline and axe-core behave on empty-alt images? RQ2: Can a lightweight classifier using simple page features distinguish decorative from meaningful images better than the rule baseline on unseen websites? 
+
+\textbf{Contributions (what this project did).} (1) A Python checker implementing five accessibility rules. (2) A Node.js harness running axe-core on the same pages. (3) A hand-reviewed pilot comparison. (4) A pipeline for collecting public pages, extracting empty-alt images, and comparing five predictors with site-level cross-validation (code released; see supplemental page).
+\textbf{Not contributions of this paper.} axe-core~\cite{axecore}, jsdom~\cite{jsdom}, scikit-learn, and the WCAG guidelines are existing tools and standards that were used.
+
+\section{Related Work}
+\textbf{Measurement of web accessibility.} The WebAIM Million analyzes the home pages of one million sites with the WAVE engine and reports detected WCAG 2 failures on 95.9\% of pages in 2026~\cite{webaim2026}. Its authors state that automated tools detect only a subset of failures and that the absence of detected errors does not mean a page is accessible. This is an industry report, not peer reviewed, and it counts detections without verifying each one.
+
+\textbf{Comparing automated tools.} Lempola et al.~\cite{lempola2024} compared three browser-extension checkers (IBM Equal Access, LERA, WAVE) on six pages and found that the tools together covered 37 of 78 WCAG 2.1 success criteria and complemented each other. Their study assumed every reported issue was a true positive, so it did not measure precision, and it did not include axe-core. The pilot in this paper differs by reviewing each finding by hand and by comparing against axe-core~\cite{axecore}. Deque, the maker of axe-core, reports that its rules found 57.38\% of issues in an audit sample of over 13{,}000 pages~\cite{deque2025}, a figure that conflicts with the lower coverage numbers commonly quoted. The report is a vendor analysis of customer audit data and is not peer reviewed, so the figures are not directly comparable to a small hand-labeled test.
+
+\textbf{Image alternative text.} Kreiss et al.~\cite{kreiss2023} studied image accessibility on Wikipedia across 108 languages and found alt descriptions on only about 10\% of images, and a rating study suggested that the presence of alt text overstates the presence of useful alt text. That work addresses the quality of non-empty descriptions and does not classify images as decorative. The W3C decorative-image tutorial~\cite{w3cdecorative} gives human decision criteria (styling, redundancy with nearby text, and so on) but no automated method.
+
+\textbf{Gap.} The literature search did not find a study that evaluates automatic prediction of whether an empty-alt image is decorative; the search was limited to the sources above and may have missed relevant work. This paper addresses that narrow question and reports the first step: how existing rule behavior performs, and how simple learned predictors compare on held-out sites.
+
+\section{Methodology}
+\subsection{Pilot data and checks}
+The pilot used six self-written HTML pages imitating small-business sites: two with no issues, one built around empty-alt ambiguity, two with mixed issues, and one planted-issue page. ClearSite implements five checks: missing or empty alt text, text contrast below 4.5:1, unlabeled inputs, non-descriptive link text, and skipped heading levels. axe-core was run through jsdom restricted to the rules image-alt, color-contrast, label, link-name, and heading-order. axe-core's color-contrast rule could not execute under jsdom (no canvas support), so contrast was not compared against it.
+
+\subsection{Pilot evaluation}
+Every ClearSite finding was reviewed by hand and labeled true or false positive. No independent ground-truth list of all issues exists for these pages, so recall is not reported for the pilot.
+
+\subsection{Main experiment design}
+\textbf{Task and labels.} Each example is an \texttt{<img>} with an empty \texttt{alt} on a public page. The label is \emph{decorative} or \emph{meaningful} (needs a text alternative), assigned by hand using the W3C criteria~\cite{w3cdecorative}. The positive class is \emph{meaningful}.
+
+\textbf{Features.} Extracted from HTML only: decorative or content words in the file name, SVG/ICO extension, width and height attributes, area and aspect ratio, whether the image is inside a link (and whether the link has text), \texttt{aria-hidden}, \texttt{role="presentation"}, parent tag, amount of text in the parent element, presence of a title or a \texttt{figcaption}.
+
+\textbf{Models, all evaluated under identical conditions.} (1) ClearSite rule: flag every empty-alt image. (2) axe-core behavior: flag none, because axe-core accepts \texttt{alt=""}. (3) File-name heuristic. (4) Logistic regression (standardized features, class-balanced). (5) Random forest (200 trees, class-balanced). All learned models are trained from scratch with scikit-learn~\cite{scikit-learn}; no pretrained models or fine-tuning are used. The seed is fixed.
+
+\textbf{Splits and leakage.} Images are split by website with grouped $k$-fold cross-validation ($k=\min(5,\#\text{sites})$), so no site contributes to both training and test folds. Metrics are precision, recall, and F1 for the meaningful class, plus confusion counts.
+
+\textbf{Implementation status.} The collection, extraction, and evaluation scripts are implemented and were smoke-tested on synthetic pages whose numbers are not reported. \textbf{Dataset.} The final dataset has 406 empty-alt images from 34 public websites. All 406 rows have a valid label: 358 meaningful (88.2\%) and 48 decorative (11.8\%). The author labeled every image by hand. Labeling agreement with a second person was not measured. \textbf{Site selection and collection.} The author searched Google Maps across different business and organization categories and compiled the publicly listed website addresses by hand. This is a convenience sample, not a random sample. The collector was run on 112 URLs. For each URL it checked \texttt{robots.txt} before fetching. It skipped 44 URLs because permission was denied or \texttt{robots.txt} could not be read (the log groups these two cases, so it is not possible to say how many were explicit disallows), fetched 67 pages successfully, and received one HTTP 403. Of the 67 fetched pages, 34 sites had at least one empty-alt image and make up the dataset. Only the home page of each site was collected, with a 3 second delay between requests.
+
+\textbf{Hardware and settings.} Python 3.13, scikit-learn 1.9.1, pandas 3.0.5, BeautifulSoup 4.15.0, Node.js with axe-core 4.13 and jsdom for the pilot; CPU only, runtime seconds. Exact commands are in the released README.
+
+\textbf{Methodological limitations.} Labels are subjective and made by the author; features are HTML-only (no pixels); the evaluation set is small (406 images, 34 sites) and imbalanced, and the decorative class has only 48 examples.
+
+\subsection{Ethics and IRB}
+No human-subjects data were collected: only publicly served HTML was analyzed, and labels were assigned by the author. No user study was run, so no IRB approval was sought. Pages are collected only when robots.txt permits, and URLs whose robots.txt could not be read were skipped.
+
+\subsection{AI assistance disclosure}
+An AI assistant (Claude, Anthropic) helped write and debug code and edit text. It was used to draft and debug the checker, the axe-core harness, the experiment scripts, and to edit this text; all reported numbers come from running the released code.
+
+\section{Results}
+\subsection{Pilot results}
+Table~\ref{tab:pilot} summarizes the pilot. ClearSite produced 15 findings across the six pages; hand review judged 14 true and 1 false positive (precision 0.93). The false positive was an empty alt on a decorative divider image; the same rule correctly flagged a real listing photo with no description. axe-core reported 5 findings on comparable rules. These numbers come from six self-written pages and should not be generalized.
+
+\begin{table}[h]
+\caption{Pilot findings per page after hand review (self-written pages)}
+\label{tab:pilot}
+\begin{tabular}{lrrrr}
+\toprule
+Page & ClearSite & axe-core & True pos. & False pos. \\
+\midrule
+clean\_page\_1 & 0 & 0 & 0 & 0 \\
+clean\_page\_2 & 0 & 0 & 0 & 0 \\
+context\_case & 2 & 0 & 1 & 1 \\
+issues\_page\_2 & 4 & 1 & 4 & 0 \\
+issues\_page\_3 & 2 & 1 & 2 & 0 \\
+sample\_page & 7 & 3 & 7 & 0 \\
+\midrule
+Total & 15 & 5 & 14 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Main experiment results}
+Table~\ref{tab:main} gives results for the meaningful class. Each image is predicted once, by a model that never saw its website, and the counts are pooled over folds. The run used one fixed seed (0), so no variance is reported and make no claim that small differences are significant.
+
+\begin{table}[h]
+\caption{Main results on 406 empty-alt images from 34 sites (positive class: meaningful). Grouped cross-validation by website, seed 0.}
+\label{tab:main}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Method & P & R & F1 & TP & FP & FN & TN \\
+\midrule
+ClearSite rule (flag all) & 0.882 & 1.000 & 0.937 & 358 & 48 & 0 & 0 \\
+axe-core (flag none) & 0.000 & 0.000 & 0.000 & 0 & 0 & 358 & 48 \\
+File-name heuristic & 0.901 & 0.966 & 0.933 & 346 & 38 & 12 & 10 \\
+Logistic regression & 0.900 & 0.751 & 0.819 & 269 & 30 & 89 & 18 \\
+Random forest & 0.940 & 0.791 & 0.859 & 283 & 18 & 75 & 30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+\textbf{What the pilot shows.} A fixed rule cannot separate decorative from meaningful empty-alt images, and axe-core accepts empty alt by default, so it missed the real failure on the listing photo. \textbf{What the main experiment shows.} The flag-everything rule has the best F1 (0.937) and perfect recall, but it gives 48 false alarms, one for every decorative image. This high F1 is mostly the class balance: always saying ``meaningful'' is right 88.2\% of the time. The random forest is the most precise method (0.940) and clears 30 of the 48 decorative images (62.5\%), cutting false alarms from 48 to 18. The cost is 75 meaningful images that it would stop flagging (recall 0.791). Logistic regression did worse on both counts, clearing only 18 decorative images while missing 89 meaningful ones. The file-name heuristic keeps recall high (0.966) but clears only 10 decorative images. Whether the trade is worth it depends on the user: in an accessibility tool, a missed barrier is usually worse than a false alarm, so the forest is better used to rank or annotate flags than to hide them. Under this setup it cannot be said that a learned model beats the simple rule on F1, and other decision thresholds were not tested. axe-core's default of accepting \texttt{alt=""} finds none of the 358 meaningful images.
+
+\textbf{Weak case.} The divider image false positive (Table~\ref{tab:pilot}, context\_case). Likely cause: the rule uses only the alt attribute. Adding file-name, size, link, and position features was tested, and it helped only partly: the random forest cleared 62.5\% of decorative images but lost about a fifth of the meaningful ones, and the plain file-name rule cleared just 10 of 48. So these HTML features separate the two classes only weakly.
+
+\textbf{Limitations.} Self-written pilot pages; the real dataset is small (34 sites, only 48 decorative images), has one labeler and no agreement measure, and was tested with a single seed, so differences between methods may be noise; the sites are a convenience sample found through Google Maps and are not a random sample of the web; sites that block bots or have an unreadable robots.txt (44 of 112 URLs) are missing, which may bias the set toward sites with simpler or more open hosting; only home pages were collected; contrast not compared against axe-core; no user study; no browser extension implemented.
+
+\textbf{Broader impact.} Fewer false alarms may make scanners easier for small teams to trust and use. A risk is over-reliance: a tool that suppresses flags on images it predicts are decorative could hide real barriers, and automated checks cover only part of WCAG~\cite{webaim2026,lempola2024}. Predictions should therefore be shown as suggestions for human review.
+
+\textbf{Future work.} (1) Add image-content features such as size in rendered pixels and visual simplicity, which HTML attributes cannot capture. (2) Label more pages with two annotators and report agreement. (3) Build the browser-extension front end so the checker runs on live pages. (4) Run an IRB-approved usability study with developers. (5) Evaluate the remaining four rules against labeled ground truth, not only against axe-core.
+
+\section*{Supplemental Links (placed after the paper)}
+\todo{Add public links: recorded demo (own voice, no synthetic narration), code and README repository, data/instructions. Test every link while logged out. Note: anonymous review may require anonymized repository links for the venue copy.}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+\end{document}
